@@ -24,7 +24,7 @@ import zipfile
 
 # 🔄 SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA
 CURRENT_VERSION = "1.0.6"
-GITHUB_REPO = "felipelahhouse/larscript"  # Repositório do Lars Aim
+GITHUB_REPO = "felipelahhouse/playnowweb"  # Repositório correto
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/version.json"
 UPDATE_CHECK_FILE = "last_update_check.txt"
