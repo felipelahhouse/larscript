@@ -100,9 +100,13 @@ class AutoUpdater:
                     
                     self.latest_version = version_data.get('version', self.current_version)
                     self.release_notes = version_data.get('notes', 'Atualização disponível')
-                    self.download_url = version_data.get('download_url', '')
+                    
+                    # URL de download do GitHub Releases
+                    # Formato: https://github.com/USER/REPO/releases/download/vX.X.X/LarsAim_vX.X.X.exe
+                    self.download_url = f"https://github.com/{GITHUB_REPO}/releases/download/v{self.latest_version}/LarsAim_v{self.latest_version}.exe"
                     
                     print(f"📦 Versão no GitHub: {self.latest_version}")
+                    print(f"📥 URL de download: {self.download_url}")
                     
                     # Comparar versões
                     if self._compare_versions(self.latest_version, self.current_version):
