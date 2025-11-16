@@ -23,7 +23,7 @@ import shutil
 import zipfile
 
 # 🔄 SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA
-CURRENT_VERSION = "1.0.6"
+CURRENT_VERSION = "1.0.9"
 GITHUB_REPO = "felipelahhouse/larscript"  # Repositório correto
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/version.json"
@@ -1485,8 +1485,8 @@ def CreateOverlay(user_info=None, on_close_callback=None):
     create_weapon_slider(ar_frame, "🔵 FOV Radius", 50, 200, 10, "AR", "radius", config.ar_config["radius"])
     create_weapon_slider(ar_frame, "📊 Confidence", 0.1, 0.8, 0.05, "AR", "confidence_threshold", config.ar_config["confidence_threshold"])
     create_weapon_slider(ar_frame, "🎪 Head Offset", 0.0, 0.5, 0.01, "AR", "head_offset_factor", config.ar_config["head_offset_factor"])
-    create_weapon_slider(ar_frame, "↔️ Speed X", 0.5, 3.0, 0.1, "AR", "MovementCoefficientX", config.ar_config["MovementCoefficientX"])
-    create_weapon_slider(ar_frame, "↕️ Speed Y", 0.5, 3.0, 0.1, "AR", "MovementCoefficientY", config.ar_config["MovementCoefficientY"])
+    create_weapon_slider(ar_frame, "↔️ Speed X", 0.5, 15.0, 0.5, "AR", "MovementCoefficientX", config.ar_config["MovementCoefficientX"])
+    create_weapon_slider(ar_frame, "↕️ Speed Y", 0.5, 15.0, 0.5, "AR", "MovementCoefficientY", config.ar_config["MovementCoefficientY"])
     create_weapon_slider(ar_frame, "👣 Steps", 1, 5, 1, "AR", "movementSteps", config.ar_config["movementSteps"])
     create_weapon_slider(ar_frame, "⏱️ Delay", 0.001, 0.01, 0.001, "AR", "delay", config.ar_config["delay"])
     create_weapon_slider(ar_frame, "💥 Recoil", 0.5, 5.0, 0.1, "AR", "recoil_strength", config.ar_config["recoil_strength"])
@@ -1664,46 +1664,26 @@ def CreateOverlay(user_info=None, on_close_callback=None):
     overlay_enabled_var = tk.BooleanVar(value=True)
 
     def format_overlay_text():
-        """Formata texto do overlay com informações em tempo real."""
+        """Overlay ultra compacto - Formato horizontal gaming."""
         current_cfg = config.get_current_config()
         
-        # Status de ativação com emoji maior
-        if config.AimToggle:
-            status = "🟢 ATIVO"
-            status_color = "verde"
-        else:
-            status = "🔴 OFF"
-            status_color = "vermelho"
+        # Status simples
+        status = "●" if config.AimToggle else "○"
         
-        # Target body part
-        if config.current_weapon == 'DMR':
-            part_key = config.dmr_config.get('target_body_part', 'head')
-            if part_key in config.body_parts:
-                part_name = config.body_parts[part_key]['name'].split('(')[0].strip()
-            else:
-                part_name = part_key
-            weapon_icon = "🎯"
-        else:
-            part_name = 'Head'
-            weapon_icon = "🔫"
+        # Weapon
+        weapon = config.current_weapon
         
-        # Offsets do AR (se não for zero)
-        offset_info = ""
-        if config.offset_x != 0 or config.offset_y != 0:
-            offset_info = f"\n📐 Offset: X={config.offset_x:+d} Y={config.offset_y:+d}"
+        # Mouse button
+        btn = config.activation_button
+        btn_text = "L" if btn == '1' else btn
         
-        # Recoil status
-        recoil_icon = "✅" if current_cfg.get('recoil_control') else "❌"
+        # Stats essenciais
+        fov = current_cfg.get('radius', 0)
+        sens = current_cfg.get('sensitivity', 0)
+        fps = config.last_fps
         
-        return (
-            f"╔═══ LARS AIM {status} ═══╗\n"
-            f"{weapon_icon} {config.current_weapon} | 🖱️ {config.activation_button} BTN\n"
-            f"🎯 Target: {part_name}\n"
-            f"📊 FOV:{current_cfg.get('radius',0)} | Sens:{current_cfg.get('sensitivity',0):.1f}\n"
-            f"↔️ Move: {current_cfg.get('MovementCoefficientX',0):.1f}/{current_cfg.get('MovementCoefficientY',0):.1f}\n"
-            f"{recoil_icon} Recoil:{current_cfg.get('recoil_strength',0):.1f} | ⚡{config.last_fps:.0f}fps{offset_info}\n"
-            f"╚═══════════════════╝"
-        )
+        # Formato HORIZONTAL - uma linha só
+        return f"{status} {weapon} │ BTN:{btn_text} │ FOV:{fov} │ S:{sens:.1f} │ {fps:.0f}fps"
 
     def update_mini_overlay_now():
         """Atualização IMEDIATA do overlay (chamada via callback)."""
@@ -1754,23 +1734,33 @@ def CreateOverlay(user_info=None, on_close_callback=None):
         mini_overlay_window['label'] = None  # Limpa label também
         print("❌ Overlay fechado")
 
-    def apply_click_through(hwnd, alpha=0.65, reapply=False):
-        """🔥 SOLUÇÃO ULTRA AGRESSIVA: Intercepta mensagens Windows + múltiplas técnicas.
-        Garante ZERO captura de mouse mesmo com jogos modificando estilos.
-        """
+    def apply_click_through(hwnd, alpha=0.98, reapply=False):
+        """🔥 Click-through DEFINITIVO: Método simplificado e eficaz."""
         try:
-            import ctypes
-            from ctypes import wintypes
-            
-            # === MÉTODO 1: Estilos Win32 MÁXIMOS ===
+            # REMOVE todos estilos captura
             ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
-            new_ex_style = (ex_style | 
-                           win32con.WS_EX_LAYERED |       
-                           win32con.WS_EX_TRANSPARENT |   # CRÍTICO
-                           win32con.WS_EX_NOACTIVATE |    
-                           win32con.WS_EX_TOOLWINDOW |    
-                           0x00000080)                     # WS_EX_TOPMOST
-            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, new_ex_style)
+            ex_style = ex_style & ~0x00040000  # Remove WS_EX_APPWINDOW
+            ex_style = ex_style & ~0x00000100  # Remove WS_EX_WINDOWEDGE
+            
+            # Adiciona TRANSPARENT + LAYERED
+            new_style = (ex_style | 
+                        win32con.WS_EX_LAYERED | 
+                        win32con.WS_EX_TRANSPARENT |  # ESSENCIAL
+                        win32con.WS_EX_NOACTIVATE |
+                        win32con.WS_EX_TOOLWINDOW |
+                        0x00000080)  # TOPMOST
+            
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, new_style)
+            win32gui.SetLayeredWindowAttributes(hwnd, 0, int(alpha * 255), win32con.LWA_ALPHA)
+            
+            # DESABILITA janela completamente (não recebe input)
+            import ctypes
+            ctypes.windll.user32.EnableWindow(hwnd, False)
+            
+            # Força TOPMOST
+            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                                 win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | 
+                                 win32con.SWP_NOACTIVATE | win32con.SWP_SHOWWINDOW)
             
             # Transparência visual
             win32gui.SetLayeredWindowAttributes(hwnd, 0, int(alpha * 255), win32con.LWA_ALPHA)
@@ -1817,13 +1807,13 @@ def CreateOverlay(user_info=None, on_close_callback=None):
         if times <= 0:
             return
         try:
-            apply_click_through(hwnd, alpha=0.65, reapply=True)
+            apply_click_through(hwnd, alpha=0.98, reapply=True)
             root.after(delay, lambda: schedule_click_through_reapply(hwnd, times-1, delay))
         except:
             pass
 
     def create_mini_overlay():
-        """Cria overlay HUD compacto, visível mas click-through (mouse passa direto)."""
+        """Overlay HUD ultra compacto HORIZONTAL - ZERO interferência."""
         if mini_overlay_window['ref'] and mini_overlay_window['ref'].winfo_exists():
             print("⚠️ Overlay já existe!")
             return
@@ -1835,49 +1825,42 @@ def CreateOverlay(user_info=None, on_close_callback=None):
         win.overrideredirect(True)
         win.attributes('-topmost', True)
         
-        # Transparência via Tk (60% visível)
+        # Transparência MÁXIMA (98% = quase invisível)
         try:
-            win.attributes('-alpha', 0.60)
+            win.attributes('-alpha', 0.98)
         except:
             pass
         
-        # Background escuro com borda sutil
-        win.configure(bg='#0f0f0f')
-        win.geometry('+15+60')  # Posição: 15px da esquerda, 60px do topo
+        # Background preto puro
+        win.configure(bg='black')
+        win.geometry('+10+10')  # Canto superior esquerdo
         
-        # Frame interno com borda
-        frm = tk.Frame(win, bg='#1a1a1a', bd=1, relief='solid', highlightthickness=1, highlightbackground='#00ff88')
-        frm.pack(padx=2, pady=2)
-        
-        # Label com informações - ARMAZENAR REFERÊNCIA DIRETA
-        lbl = tk.Label(frm,
+        # Label HORIZONTAL (uma linha só)
+        lbl = tk.Label(win,
                       text=format_overlay_text(),
-                      font=("Consolas", 9, "bold"), 
+                      font=("Consolas", 8, "bold"), 
                       justify='left',
-                      fg='#00ff88',  # Verde brilhante
-                      bg='#1a1a1a',
-                      padx=8, pady=4)
+                      fg='#00ff00',  # Verde neon
+                      bg='black',
+                      padx=6, pady=2)
         lbl.pack()
         
-        # ✅ ARMAZENA REFERÊNCIA DIRETA AO LABEL (crucial!)
+        # Armazena referência
         mini_overlay_window['label'] = lbl
         
-        # IMPORTANTE: Aguarda janela ser totalmente criada
+        # Aguarda criação completa
         win.update()
         
         try:
             hwnd = win.winfo_id()
-            # Aplicação inicial de click-through
-            apply_click_through(hwnd, alpha=0.60)
-            # Reaplicações para garantir persistência
-            schedule_click_through_reapply(hwnd, times=8, delay=350)
-            print("✅ Overlay HUD ativo (visível + click-through)")
-            print(f"✅ Label armazenado: {lbl is not None}")
+            # Click-through DEFINITIVO
+            apply_click_through(hwnd, alpha=0.98)
+            schedule_click_through_reapply(hwnd, times=10, delay=300)
+            print("✅ Overlay HORIZONTAL ativo (ZERO click)")
         except Exception as e:
-            print(f"⚠️ Erro click-through: {e}")
+            print(f"⚠️ Erro: {e}")
         
-        # Iniciar atualização em tempo real
-        print("🔄 Iniciando loop de atualização...")
+        # Inicia atualização
         update_mini_overlay()
 
     def toggle_overlay():
@@ -2513,24 +2496,27 @@ def main():
                     current_cfg = config.get_current_config()
                     
                     # Sistema de tracking COLADO - segue perfeitamente
-                    smooth = float(current_cfg.get('smooth_factor', 0.9))
+                    smooth = float(current_cfg.get('smooth_factor', 0.7))
                     sens = float(current_cfg.get('sensitivity', 1.0))
                     
                     # 🔥 USAR X/Y DIRETO DA CONFIG DA ARMA ATUAL (AR ou DMR) - SEPARADOS!
                     coef_x = float(current_cfg.get('MovementCoefficientX', 1.0))
                     coef_y = float(current_cfg.get('MovementCoefficientY', 1.0))
                     
-                    # 🔥 Sistema FORTE - NÃO PERDE O ALVO
+                    # 🔥 Sistema FORTE - NÃO PERDE O ALVO - AJUSTADO PARA GRUDAR
                     distance = math.sqrt(moveX*moveX + moveY*moveY)
-                    if distance < 15:  # Muito perto - cola no alvo
-                        smooth_multiplier = 1.5  # 🔥 50% - mantém grudado
-                    elif distance < 40:  # Perto - tracking forte
-                        smooth_multiplier = 1.8  # 🔥 80% - gruda forte
-                    elif distance < 100:  # Médio - tracking agressivo
-                        smooth_multiplier = 2.2  # 🔥 120% - puxa bem
-                    else:  # Longe - snap rápido
-                        smooth_multiplier = 2.5  # 🔥 150% - snap inicial
+                    if distance < 10:  # GRUDADO - mantém perfeitamente
+                        smooth_multiplier = 0.8 * (1.0 - smooth)  # Movimento suave mas preciso
+                    elif distance < 30:  # Muito perto - tracking preciso
+                        smooth_multiplier = 1.2 * (1.0 - smooth)  # Gruda bem
+                    elif distance < 80:  # Perto - tracking agressivo
+                        smooth_multiplier = 1.6 * (1.0 - smooth)  # Puxa forte
+                    elif distance < 150:  # Médio - snap rápido
+                        smooth_multiplier = 2.2 * (1.0 - smooth)  # Snap inicial forte
+                    else:  # Longe - snap instantâneo
+                        smooth_multiplier = 3.0 * (1.0 - smooth)  # Máximo snap
                     
+                    # Aplicar smooth_factor corretamente: quanto MENOR smooth, MAIOR o movimento
                     final_x = int(moveX * sens * coef_x * smooth_multiplier)
                     final_y = int(moveY * sens * coef_y * smooth_multiplier)
                     
@@ -2541,7 +2527,7 @@ def main():
                     # DMR não usa recoil
                     
                     # 🔥 Limites AUMENTADOS para não perder alvo
-                    max_move = 150  # 🔥 Permite movimentos maiores
+                    max_move = 200  # 🔥 Permite movimentos MAIORES para tracking perfeito
                     final_x = max(-max_move, min(max_move, final_x))
                     final_y = max(-max_move, min(max_move, final_y))
                     
@@ -2555,7 +2541,7 @@ def main():
                             dmr_target = config.dmr_config.get('target_body_part', 'auto')
                             target_name = config.body_parts[dmr_target]['name'] if dmr_target in config.body_parts else dmr_target
                             weapon_info += f" ({target_name})"
-                        print(f"🎯 AIMBOT ATIVO! {weapon_info} | Target Y: {best_target['y']} | Move: X={final_x}, Y={final_y} | Distance: {int(distance)}")
+                        print(f"🎯 GRUDADO! {weapon_info} | Raw: X={moveX:.0f},Y={moveY:.0f} | Final: X={final_x},Y={final_y} | Dist:{int(distance)} | Smooth:{smooth:.2f}")
                 
                 # 🚀 CONTROLE DE FPS - limita taxa de processamento
                 frame_count += 1
