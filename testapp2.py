@@ -23,7 +23,7 @@ import shutil
 import zipfile
 
 # 🔄 SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA
-CURRENT_VERSION = "1.0.9"
+CURRENT_VERSION = "1.1.0"
 GITHUB_REPO = "felipelahhouse/larscript"  # Repositório correto
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/version.json"
