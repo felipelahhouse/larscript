@@ -159,14 +159,17 @@ class AutoUpdater:
                 
         except requests.exceptions.RequestException as e:
             print(f"❌ Erro de conexão ao verificar atualizações: {e}")
+            print(f"URL tentada: {GITHUB_RAW_URL}")
             if not silent:
                 messagebox.showerror(
                     "Erro de Conexão",
-                    "Não foi possível conectar ao servidor de atualizações.\nVerifique sua internet."
+                    f"Não foi possível conectar ao servidor de atualizações.\n\nErro: {str(e)}\n\nURL: {GITHUB_RAW_URL}"
                 )
             return False
         except Exception as e:
             print(f"❌ Erro inesperado ao verificar atualizações: {e}")
+            import traceback
+            traceback.print_exc()
             if not silent:
                 messagebox.showerror(
                     "Erro",
