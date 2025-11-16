@@ -23,10 +23,10 @@ import shutil
 import zipfile
 
 # 🔄 SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA
-CURRENT_VERSION = "1.0.0"
+CURRENT_VERSION = "1.0.1"
 GITHUB_REPO = "felipelahhouse/larscript"  # Repositório do Lars Aim
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
-GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/master/version.json"
+GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/version.json"
 UPDATE_CHECK_FILE = "last_update_check.txt"
 
 # KEYAUTH IMPORTS E SETUP
