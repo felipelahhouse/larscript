@@ -433,21 +433,21 @@ class PerfectAimbotConfig:
         self.ar_config = {
             "sensitivity": 8.5,  # Sensibilidade EXTREMA para tracking colado
             "MovementCoefficientX": 7.0,  # Movimento horizontal EXTREMO
-            "MovementCoefficientY": 6.8,  # Movimento vertical EXTREMO
+            "MovementCoefficientY": 4.5,  # Movimento vertical REDUZIDO - evita subir demais
             "movementSteps": 1,  # MOVIMENTO ÚNICO = VELOCIDADE MÁXIMA
             "delay": 0.0,  # SEM DELAY = SEM LAG
             "radius": 480,  # FOV máximo
             "confidence_threshold": 0.08,  # Detecção balanceada - precisão + velocidade
             "head_offset_factor": 0.08,  # Offset para cabeça
             "recoil_control": True,  # SEMPRE ATIVO para AR
-            "recoil_strength": 6.5,  # RECOIL CONTROL EXTREMO
+            "recoil_strength": 3.5,  # RECOIL REDUZIDO - evita puxar muito
             "smooth_factor": 0.99  # QUASE ZERO SMOOTH = COLADO TOTAL
         }
         
         self.dmr_config = {
             "sensitivity": 7.5,  # Sensibilidade ALTA para snap rápido
             "MovementCoefficientX": 6.5,  # Movimento horizontal preciso
-            "MovementCoefficientY": 6.2,  # Movimento vertical preciso
+            "MovementCoefficientY": 4.5,  # Movimento vertical REDUZIDO - precisão
             "movementSteps": 1,  # MOVIMENTO ÚNICO = SEM LAG
             "delay": 0.0,  # SEM DELAY = VELOCIDADE MÁXIMA
             "radius": 420,  # FOV bem aumentado
