@@ -2496,28 +2496,28 @@ def main():
                     coef_x = float(current_cfg.get('MovementCoefficientX', 1.0))
                     coef_y = float(current_cfg.get('MovementCoefficientY', 1.0))
                     
-                    # 🎯 Sistema SUAVE e NATURAL - tracking progressivo
+                    # 🔥 Sistema FORTE - NÃO PERDE O ALVO
                     distance = math.sqrt(moveX*moveX + moveY*moveY)
-                    if distance < 10:  # Muito perto - já no alvo
-                        smooth_multiplier = 1.0  # Movimento mínimo
-                    elif distance < 30:  # Perto - ajuste fino
-                        smooth_multiplier = 1.2  # +20% suave
-                    elif distance < 80:  # Médio - tracking ativo
-                        smooth_multiplier = 1.5  # +50% controlado
-                    else:  # Longe - snap inicial
-                        smooth_multiplier = 1.8  # +80% para aproximar
+                    if distance < 15:  # Muito perto - cola no alvo
+                        smooth_multiplier = 1.5  # 🔥 50% - mantém grudado
+                    elif distance < 40:  # Perto - tracking forte
+                        smooth_multiplier = 1.8  # 🔥 80% - gruda forte
+                    elif distance < 100:  # Médio - tracking agressivo
+                        smooth_multiplier = 2.2  # 🔥 120% - puxa bem
+                    else:  # Longe - snap rápido
+                        smooth_multiplier = 2.5  # 🔥 150% - snap inicial
                     
                     final_x = int(moveX * sens * coef_x * smooth_multiplier)
                     final_y = int(moveY * sens * coef_y * smooth_multiplier)
                     
-                    # 🎯 Recoil control SUAVE - APENAS para AR
+                    # 🔥 Recoil control FORTE - APENAS para AR
                     if config.current_weapon == 'AR':
-                        rs = float(current_cfg.get('recoil_strength', 2.0))
-                        final_y += int(rs * 2.0)  # 🎯 Compensação LEVE
+                        rs = float(current_cfg.get('recoil_strength', 3.5))
+                        final_y += int(rs * 3.0)  # 🔥 Compensação FORTE (puxa mais pra baixo)
                     # DMR não usa recoil
                     
-                    # 🎯 Limites NORMAIS para movimento controlado
-                    max_move = 100  # Movimentos limitados para precisão
+                    # 🔥 Limites AUMENTADOS para não perder alvo
+                    max_move = 150  # 🔥 Permite movimentos maiores
                     final_x = max(-max_move, min(max_move, final_x))
                     final_y = max(-max_move, min(max_move, final_y))
                     
