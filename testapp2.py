@@ -441,7 +441,7 @@ class PerfectAimbotConfig:
             "head_offset_factor": 0.08,  # Offset para cabeça
             "recoil_control": True,  # SEMPRE ATIVO para AR
             "recoil_strength": 2.5,  # RECOIL MUITO REDUZIDO
-            "smooth_factor": 0.98  # TRACKING MAIS SUAVE
+            "smooth_factor": 0.50  # 🔥 SMOOTH MUITO BAIXO = movimento DIRETO
         }
         
         self.dmr_config = {
