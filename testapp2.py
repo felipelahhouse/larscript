@@ -431,32 +431,32 @@ class PerfectAimbotConfig:
         
         # CONFIGURAÇÕES ULTRA AGRESSIVAS PARA TRACKING PERFEITO
         self.ar_config = {
-            "sensitivity": 8.5,  # Sensibilidade EXTREMA para tracking colado
-            "MovementCoefficientX": 7.0,  # Movimento horizontal EXTREMO
-            "MovementCoefficientY": 4.5,  # Movimento vertical REDUZIDO - evita subir demais
+            "sensitivity": 9.0,  # Sensibilidade MÁXIMA para tracking instantâneo
+            "MovementCoefficientX": 8.0,  # Movimento horizontal MUITO FORTE
+            "MovementCoefficientY": 5.0,  # Movimento vertical BALANCEADO
             "movementSteps": 1,  # MOVIMENTO ÚNICO = VELOCIDADE MÁXIMA
             "delay": 0.0,  # SEM DELAY = SEM LAG
             "radius": 480,  # FOV máximo
-            "confidence_threshold": 0.08,  # Detecção balanceada - precisão + velocidade
+            "confidence_threshold": 0.12,  # Detecção mais precisa - menos falsos positivos
             "head_offset_factor": 0.08,  # Offset para cabeça
             "recoil_control": True,  # SEMPRE ATIVO para AR
-            "recoil_strength": 3.5,  # RECOIL REDUZIDO - evita puxar muito
-            "smooth_factor": 0.99  # QUASE ZERO SMOOTH = COLADO TOTAL
+            "recoil_strength": 2.5,  # RECOIL MUITO REDUZIDO
+            "smooth_factor": 0.98  # TRACKING MAIS SUAVE
         }
         
         self.dmr_config = {
-            "sensitivity": 7.5,  # Sensibilidade ALTA para snap rápido
-            "MovementCoefficientX": 6.5,  # Movimento horizontal preciso
-            "MovementCoefficientY": 4.5,  # Movimento vertical REDUZIDO - precisão
+            "sensitivity": 8.5,  # Sensibilidade MUITO ALTA para snap instantâneo
+            "MovementCoefficientX": 7.5,  # Movimento horizontal FORTE
+            "MovementCoefficientY": 5.0,  # Movimento vertical BALANCEADO
             "movementSteps": 1,  # MOVIMENTO ÚNICO = SEM LAG
             "delay": 0.0,  # SEM DELAY = VELOCIDADE MÁXIMA
             "radius": 420,  # FOV bem aumentado
-            "confidence_threshold": 0.08,  # Detecção balanceada - precisão + velocidade
+            "confidence_threshold": 0.12,  # Detecção precisa - menos falsos positivos
             "head_offset_factor": 0.35,  # Offset para centro superior (peito)
             "target_body_part": "head",  # PADRÃO: HEAD para instant kill
             "recoil_control": False,  # DMR não precisa de recoil control
             "recoil_strength": 0.0,  # Sem recoil para DMR
-            "smooth_factor": 0.95  # Smooth alto para precisão máxima
+            "smooth_factor": 0.96  # Smooth balanceado para precisão
         }
         
         # CONFIGURAÇÕES DE PARTES DO CORPO (DMR) - OFFSETS ANATÔMICOS CORRETOS
@@ -556,14 +556,13 @@ class PerfectAimbotConfig:
         """Atualiza configurações baseado na arma atual"""
         current_config = self.get_current_config()
         
-        self.Sensitivity = current_config["sensitivity"]
-        self.MovementCoefficientX = current_config["MovementCoefficientX"]
-        self.MovementCoefficientY = current_config["MovementCoefficientY"]
-        self.movementSteps = current_config["movementSteps"]
-        self.delay = current_config["delay"]
-        self.radius = current_config["radius"]
+        # REMOVIDO: Não mais sobrescrever valores globais
+        # Cada arma mantém suas próprias configs em ar_config/dmr_config
+        # O loop de detecção lerá diretamente de get_current_config()
+        
+        # Apenas atualizar valores que são realmente globais
         self.confidence_threshold = current_config["confidence_threshold"]
-        self.head_offset_factor = current_config["head_offset_factor"]
+        self.radius = current_config["radius"]
         
         # Notifica overlay para atualização instantânea
         self._notify_overlay_update()
@@ -2423,14 +2422,14 @@ def main():
                     conf=config.confidence_threshold,
                     classes=[0],
                     verbose=False,
-                    max_det=12,  # Balanceado para performance
-                    imgsz=320,
+                    max_det=5,  # 🎯 Poucas detecções = mais preciso
+                    imgsz=320,  # 🎯 Tamanho otimizado para velocidade
                     device=device,
                     half=torch.cuda.is_available(),
-                    augment=False,
-                    agnostic_nms=False,
+                    augment=False,  # 🎯 Augment OFF = mais rápido
+                    agnostic_nms=True,
                     retina_masks=False,
-                    iou=0.40,  # Balanceado para evitar falsos positivos
+                    iou=0.45,  # 🎯 IOU normal para precisão
                     save=False,
                     stream_buffer=False
                 )
@@ -2456,21 +2455,26 @@ def main():
                     center_x = int((x1 + x2) / 2)
                     box_h = y2 - y1
                     box_w = x2 - x1
-                    if box_w < 5 or box_h < 5:
+                    # 🎯 Filtro de tamanho mínimo razoável
+                    if box_w < 10 or box_h < 10:
                         continue
                     current_cfg = config.get_current_config()
                     if config.current_weapon == 'DMR':
-                        dmr_target = config.dmr_config.get('target_body_part', 'auto')
+                        # 🎯 DMR: Usa sistema de body_parts para mira PRECISA
+                        dmr_target = config.dmr_config.get('target_body_part', 'head')
                         if dmr_target in config.body_parts:
                             body_offset = config.body_parts[dmr_target]['offset']
                             target_part = dmr_target
                         else:
-                            body_offset = 0.35  # Centro superior (peito) como fallback
-                            target_part = 'auto'
+                            # Fallback para cabeça se não encontrar
+                            body_offset = 0.05  # Topo da caixa = cabeça
+                            target_part = 'head'
                     else:
-                        body_offset = float(current_cfg.get('head_offset_factor', 0.2))
+                        # 🔫 AR: Usa head_offset_factor para cabeça
+                        body_offset = float(current_cfg.get('head_offset_factor', 0.08))
                         target_part = 'head'
-                    # MODO AUTO: gruda no centro superior (região do peito) para tracking perfeito
+                    
+                    # Calcular Y do alvo baseado no offset escolhido
                     aim_y = int(y1 + box_h * body_offset)
                     dist_x = center_x - (config.crosshairX)
                     dist_y = aim_y - (config.crosshairY)
@@ -2479,6 +2483,7 @@ def main():
                         best_distance = dist
                         best_target = {'x': center_x, 'y': aim_y, 'target_part': target_part, 'body_offset': body_offset}
                 if best_target:
+                    # 🎯 Usar posição REAL do alvo (sem predição)
                     moveX = best_target['x'] - (config.crosshairX + config.offset_x)
                     moveY = best_target['y'] - (config.crosshairY + config.offset_y)
                     current_cfg = config.get_current_config()
@@ -2487,29 +2492,32 @@ def main():
                     smooth = float(current_cfg.get('smooth_factor', 0.9))
                     sens = float(current_cfg.get('sensitivity', 1.0))
                     
-                    # Sistema EXTREMO: tracking INSTANTÂNEO colado em TODAS as distâncias
+                    # 🔥 USAR X/Y DIRETO DA CONFIG DA ARMA ATUAL (AR ou DMR) - SEPARADOS!
+                    coef_x = float(current_cfg.get('MovementCoefficientX', 1.0))
+                    coef_y = float(current_cfg.get('MovementCoefficientY', 1.0))
+                    
+                    # 🎯 Sistema SUAVE e NATURAL - tracking progressivo
                     distance = math.sqrt(moveX*moveX + moveY*moveY)
-                    if distance < 15:  # Muito perto, COLA TOTAL
-                        smooth_multiplier = 2.5  # 150% mais rápido - COLA 100%
-                    elif distance < 50:  # Perto, tracking EXTREMO
-                        smooth_multiplier = 2.2  # 120% mais rápido - GRUDA FORTE
-                    elif distance < 100:  # Médio, tracking MUITO agressivo
-                        smooth_multiplier = 1.8  # 80% mais rápido - GRUDA RÁPIDO
-                    else:  # Longe, snap INSTANTÂNEO
-                        smooth_multiplier = 1.5  # 50% mais rápido - SNAP TOTAL
+                    if distance < 10:  # Muito perto - já no alvo
+                        smooth_multiplier = 1.0  # Movimento mínimo
+                    elif distance < 30:  # Perto - ajuste fino
+                        smooth_multiplier = 1.2  # +20% suave
+                    elif distance < 80:  # Médio - tracking ativo
+                        smooth_multiplier = 1.5  # +50% controlado
+                    else:  # Longe - snap inicial
+                        smooth_multiplier = 1.8  # +80% para aproximar
                     
-                    final_x = int(moveX * sens * float(config.MovementCoefficientX) * smooth_multiplier)
-                    final_y = int(moveY * sens * float(config.MovementCoefficientY) * smooth_multiplier)
+                    final_x = int(moveX * sens * coef_x * smooth_multiplier)
+                    final_y = int(moveY * sens * coef_y * smooth_multiplier)
                     
-                    # Recoil control - SEMPRE ATIVO PARA AR, NUNCA PARA DMR
+                    # 🎯 Recoil control SUAVE - APENAS para AR
                     if config.current_weapon == 'AR':
-                        # AR sempre usa recoil control (arma automática precisa compensar)
-                        rs = float(current_cfg.get('recoil_strength', 6.5))
-                        final_y += int(rs * 4.5)  # Puxa para baixo - compensa recoil
-                    # DMR não aplica recoil control (arma semi-automática, tiro único)
+                        rs = float(current_cfg.get('recoil_strength', 2.0))
+                        final_y += int(rs * 2.0)  # 🎯 Compensação LEVE
+                    # DMR não usa recoil
                     
-                    # Limite de movimento EXTREMO para tracking perfeito
-                    max_move = 250  # Permite movimentos muito grandes
+                    # 🎯 Limites NORMAIS para movimento controlado
+                    max_move = 100  # Movimentos limitados para precisão
                     final_x = max(-max_move, min(max_move, final_x))
                     final_y = max(-max_move, min(max_move, final_y))
                     
