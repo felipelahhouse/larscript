@@ -1,0 +1,32 @@
+{
+  "version": "2.3.0",
+  "date": "2025-01-15",
+  "changelog": [
+    "🎯 DETECÇÃO ULTRA AGRESSIVA V2: Detecta qualquer pose e posição na tela!",
+    "🔻 Confidence ultra baixa: AR 0.10→0.05, DMR 0.08→0.04 (50% mais sensível)",
+    "🖼️ YOLO imgsz aumentado: 320→416 (+30% melhor para alvos pequenos)",
+    "📊 Max detecções: 8→15 (+88% mais alvos detectados por frame)",
+    "🔄 Augmentation ativado: detecta poses rotacionadas e incomuns",
+    "🎯 Agnostic NMS ativado: melhor agrupamento de detecções",
+    "🔷 IoU relaxado: 0.45→0.35 (aceita mais boxes sobrepostas)",
+    "📏 Box mínima: 3x3→2x2px (33% menor, aceita alvos mais distantes)",
+    "🙇 Detecção agachado dupla: (largura > altura × 1.15) OU (altura < 30 E largura > 15)"
+  ],
+  "download_url": "https://github.com/felipelahhouse/larscript",
+  "features": [
+    "Sistema AR e DMR com configuracoes independentes",
+    "Tracking avançado com predição de movimento e interpolação",
+    "Controle de recoil adaptativo",
+    "Interface grafica moderna com abas",
+    "Hotkeys: G4 (trocar arma), G5 (trocar botao), G (DMR body parts)",
+    "Overlay HUD com informacoes em tempo real",
+    "Auto-save de configuracoes",
+    "Sistema de auto-update com botao na interface"
+  ],
+  "fixes": [
+    "Corrigido: Sensibilidade inconsistente entre PCs diferentes",
+    "Corrigido: Tracking muito agressivo causando jitter",
+    "Corrigido: DPI detection causando multiplicadores errados (8.0-12.0)",
+    "Corrigido: Overlay nao atualizava em tempo real"
+  ]
+}
