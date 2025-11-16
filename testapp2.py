@@ -91,7 +91,13 @@ class AutoUpdater:
                 print(f"📊 Status Code: {version_response.status_code}")
                 
                 if version_response.status_code == 200:
-                    version_data = version_response.json()
+                    # Usar .text e remover BOM manualmente para evitar erro
+                    import json
+                    text = version_response.text
+                    if text.startswith('\ufeff'):
+                        text = text[1:]  # Remove BOM UTF-8
+                    version_data = json.loads(text)
+                    
                     self.latest_version = version_data.get('version', self.current_version)
                     self.release_notes = version_data.get('notes', 'Atualização disponível')
                     self.download_url = version_data.get('download_url', '')
