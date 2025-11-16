@@ -26,6 +26,7 @@ import zipfile
 CURRENT_VERSION = "1.0.0"
 GITHUB_REPO = "felipelahhouse/larscript"  # Repositório do Lars Aim
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/master/version.json"
 UPDATE_CHECK_FILE = "last_update_check.txt"
 
 # KEYAUTH IMPORTS E SETUP
@@ -82,8 +83,38 @@ class AutoUpdater:
         try:
             print(f"🔍 Verificando atualizações... (Versão atual: {self.current_version})")
             
-            # Fazer requisição à API do GitHub
+            # Tentar primeiro pegar version.json direto do repositório
             headers = {'User-Agent': 'LarsAimbot-Updater'}
+            try:
+                version_response = requests.get(GITHUB_RAW_URL, headers=headers, timeout=10)
+                if version_response.status_code == 200:
+                    version_data = version_response.json()
+                    self.latest_version = version_data.get('version', self.current_version)
+                    self.release_notes = version_data.get('notes', 'Atualização disponível')
+                    self.download_url = version_data.get('download_url', '')
+                    
+                    print(f"📦 Versão no GitHub: {self.latest_version}")
+                    
+                    # Comparar versões
+                    if self._compare_versions(self.latest_version, self.current_version):
+                        self.update_available = True
+                        print(f"✅ Nova versão disponível: {self.latest_version}")
+                        if not silent:
+                            self._show_update_notification()
+                        return True
+                    else:
+                        self.update_available = False
+                        print(f"✅ Você está na versão mais recente!")
+                        if not silent:
+                            messagebox.showinfo(
+                                "Atualização",
+                                f"✅ Você já está usando a versão mais recente!\n\nVersão atual: {self.current_version}"
+                            )
+                        return False
+            except:
+                pass
+            
+            # Se falhar, tentar API de releases
             response = requests.get(self.api_url, headers=headers, timeout=10)
             
             if response.status_code == 200:
