@@ -86,7 +86,10 @@ class AutoUpdater:
             # Tentar primeiro pegar version.json direto do repositório
             headers = {'User-Agent': 'LarsAimbot-Updater'}
             try:
+                print(f"📡 Tentando acessar: {GITHUB_RAW_URL}")
                 version_response = requests.get(GITHUB_RAW_URL, headers=headers, timeout=10)
+                print(f"📊 Status Code: {version_response.status_code}")
+                
                 if version_response.status_code == 200:
                     version_data = version_response.json()
                     self.latest_version = version_data.get('version', self.current_version)
@@ -101,6 +104,7 @@ class AutoUpdater:
                         print(f"✅ Nova versão disponível: {self.latest_version}")
                         if not silent:
                             self._show_update_notification()
+                        self.checking = False
                         return True
                     else:
                         self.update_available = False
@@ -110,9 +114,14 @@ class AutoUpdater:
                                 "Atualização",
                                 f"✅ Você já está usando a versão mais recente!\n\nVersão atual: {self.current_version}"
                             )
+                        self.checking = False
                         return False
-            except:
-                pass
+                else:
+                    print(f"⚠️ Erro ao acessar version.json: HTTP {version_response.status_code}")
+            except Exception as e:
+                print(f"❌ Exceção ao acessar version.json: {e}")
+                import traceback
+                traceback.print_exc()
             
             # Se falhar, tentar API de releases
             response = requests.get(self.api_url, headers=headers, timeout=10)
