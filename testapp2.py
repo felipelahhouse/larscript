@@ -431,13 +431,13 @@ class PerfectAimbotConfig:
         
         # CONFIGURAÇÕES ULTRA AGRESSIVAS PARA TRACKING PERFEITO
         self.ar_config = {
-            "sensitivity": 8.0,  # Sensibilidade EXTREMA para tracking colado
-            "MovementCoefficientX": 6.5,  # Movimento horizontal EXTREMO
-            "MovementCoefficientY": 6.2,  # Movimento vertical EXTREMO
+            "sensitivity": 8.5,  # Sensibilidade EXTREMA para tracking colado
+            "MovementCoefficientX": 7.0,  # Movimento horizontal EXTREMO
+            "MovementCoefficientY": 6.8,  # Movimento vertical EXTREMO
             "movementSteps": 1,  # MOVIMENTO ÚNICO = VELOCIDADE MÁXIMA
             "delay": 0.0,  # SEM DELAY = SEM LAG
             "radius": 480,  # FOV máximo
-            "confidence_threshold": 0.05,  # Detecção ULTRA AGRESSIVA - detecta até agachado
+            "confidence_threshold": 0.08,  # Detecção balanceada - precisão + velocidade
             "head_offset_factor": 0.08,  # Offset para cabeça
             "recoil_control": True,  # SEMPRE ATIVO para AR
             "recoil_strength": 6.5,  # RECOIL CONTROL EXTREMO
@@ -445,18 +445,18 @@ class PerfectAimbotConfig:
         }
         
         self.dmr_config = {
-            "sensitivity": 6.5,  # Sensibilidade ALTA para snap rápido
-            "MovementCoefficientX": 5.5,  # Movimento horizontal preciso
-            "MovementCoefficientY": 5.2,  # Movimento vertical preciso
+            "sensitivity": 7.5,  # Sensibilidade ALTA para snap rápido
+            "MovementCoefficientX": 6.5,  # Movimento horizontal preciso
+            "MovementCoefficientY": 6.2,  # Movimento vertical preciso
             "movementSteps": 1,  # MOVIMENTO ÚNICO = SEM LAG
             "delay": 0.0,  # SEM DELAY = VELOCIDADE MÁXIMA
             "radius": 420,  # FOV bem aumentado
-            "confidence_threshold": 0.05,  # Detecção ULTRA AGRESSIVA - detecta qualquer posição
+            "confidence_threshold": 0.08,  # Detecção balanceada - precisão + velocidade
             "head_offset_factor": 0.35,  # Offset para centro superior (peito)
             "target_body_part": "head",  # PADRÃO: HEAD para instant kill
             "recoil_control": False,  # DMR não precisa de recoil control
             "recoil_strength": 0.0,  # Sem recoil para DMR
-            "smooth_factor": 0.92  # Smooth médio para precisão
+            "smooth_factor": 0.95  # Smooth alto para precisão máxima
         }
         
         # CONFIGURAÇÕES DE PARTES DO CORPO (DMR) - OFFSETS ANATÔMICOS CORRETOS
@@ -2423,14 +2423,14 @@ def main():
                     conf=config.confidence_threshold,
                     classes=[0],
                     verbose=False,
-                    max_det=15,  # Aumentado para detectar mais alvos
+                    max_det=12,  # Balanceado para performance
                     imgsz=320,
                     device=device,
                     half=torch.cuda.is_available(),
                     augment=False,
                     agnostic_nms=False,
                     retina_masks=False,
-                    iou=0.35,  # Reduzido para detectar mesmo overlapping boxes
+                    iou=0.40,  # Balanceado para evitar falsos positivos
                     save=False,
                     stream_buffer=False
                 )
