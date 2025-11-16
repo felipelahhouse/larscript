@@ -1666,24 +1666,43 @@ def CreateOverlay(user_info=None, on_close_callback=None):
     def format_overlay_text():
         """Formata texto do overlay com informações em tempo real."""
         current_cfg = config.get_current_config()
-        # Status de ativação
-        status = "🟢 ATIVO" if config.AimToggle else "🔴 OFF"
+        
+        # Status de ativação com emoji maior
+        if config.AimToggle:
+            status = "🟢 ATIVO"
+            status_color = "verde"
+        else:
+            status = "🔴 OFF"
+            status_color = "vermelho"
+        
         # Target body part
         if config.current_weapon == 'DMR':
-            part_key = config.dmr_config.get('target_body_part', 'upper_chest')
+            part_key = config.dmr_config.get('target_body_part', 'head')
             if part_key in config.body_parts:
                 part_name = config.body_parts[part_key]['name'].split('(')[0].strip()
             else:
                 part_name = part_key
+            weapon_icon = "🎯"
         else:
             part_name = 'Head'
+            weapon_icon = "🔫"
+        
+        # Offsets do AR (se não for zero)
+        offset_info = ""
+        if config.offset_x != 0 or config.offset_y != 0:
+            offset_info = f"\n📐 Offset: X={config.offset_x:+d} Y={config.offset_y:+d}"
+        
+        # Recoil status
+        recoil_icon = "✅" if current_cfg.get('recoil_control') else "❌"
         
         return (
-            f"═══ LARS AIM {status} ═══\n"
-            f"⚔️ {config.current_weapon} | 🖱️ {config.activation_button}\n"
-            f"🎯 {part_name}\n"
-            f"📊 FOV:{current_cfg.get('radius',0)} S:{current_cfg.get('sensitivity',0):.1f}\n"
-            f"💥 Recoil:{'ON' if current_cfg.get('recoil_control') else 'OFF'} | ⚡{config.last_fps:.0f}fps"
+            f"╔═══ LARS AIM {status} ═══╗\n"
+            f"{weapon_icon} {config.current_weapon} | 🖱️ {config.activation_button} BTN\n"
+            f"🎯 Target: {part_name}\n"
+            f"📊 FOV:{current_cfg.get('radius',0)} | Sens:{current_cfg.get('sensitivity',0):.1f}\n"
+            f"↔️ Move: {current_cfg.get('MovementCoefficientX',0):.1f}/{current_cfg.get('MovementCoefficientY',0):.1f}\n"
+            f"{recoil_icon} Recoil:{current_cfg.get('recoil_strength',0):.1f} | ⚡{config.last_fps:.0f}fps{offset_info}\n"
+            f"╚═══════════════════╝"
         )
 
     def update_mini_overlay_now():
@@ -2349,6 +2368,11 @@ def main():
         error_repeats = 0
         last_error_type = None
         
+        # 🚀 CONTROLE DE FPS - limita a 30-60 FPS para estabilidade
+        target_fps = 40  # FPS alvo
+        frame_time = 1.0 / target_fps  # Tempo por frame (0.025s = 40fps)
+        last_frame_time = time.time()
+        
         # Criar instância MSS local para esta thread
         def create_mss():
             try:
@@ -2362,7 +2386,7 @@ def main():
             print("❌ Não foi possível criar captura de tela. Encerrando loop.")
             return
         
-        print("✅ Loop de detecção iniciado!")
+        print("✅ Loop de detecção iniciado! Target: 40 FPS")
         
         # Flags para debug (imprime apenas primeira vez)
         first_activation = True
@@ -2422,14 +2446,14 @@ def main():
                     conf=config.confidence_threshold,
                     classes=[0],
                     verbose=False,
-                    max_det=5,  # 🎯 Poucas detecções = mais preciso
-                    imgsz=320,  # 🎯 Tamanho otimizado para velocidade
+                    max_det=5,  # 🚀 Reduzido para 5 = mais rápido
+                    imgsz=288,  # 🚀 Reduzido para 288 = mais rápido (mantém qualidade)
                     device=device,
                     half=torch.cuda.is_available(),
-                    augment=False,  # 🎯 Augment OFF = mais rápido
+                    augment=False,  # 🚀 OFF = mais rápido
                     agnostic_nms=True,
                     retina_masks=False,
-                    iou=0.45,  # 🎯 IOU normal para precisão
+                    iou=0.45,
                     save=False,
                     stream_buffer=False
                 )
@@ -2532,7 +2556,14 @@ def main():
                             target_name = config.body_parts[dmr_target]['name'] if dmr_target in config.body_parts else dmr_target
                             weapon_info += f" ({target_name})"
                         print(f"🎯 AIMBOT ATIVO! {weapon_info} | Target Y: {best_target['y']} | Move: X={final_x}, Y={final_y} | Distance: {int(distance)}")
+                
+                # 🚀 CONTROLE DE FPS - limita taxa de processamento
                 frame_count += 1
+                elapsed = time.time() - last_frame_time
+                if elapsed < frame_time:
+                    time.sleep(frame_time - elapsed)  # Aguarda para manter FPS estável
+                last_frame_time = time.time()
+                
                 if time.time() - last_time >= 1.0:
                     config.last_fps = float(frame_count)
                     print(f"🎯 FPS: {config.last_fps:.1f} | Weapon: {config.current_weapon}")
