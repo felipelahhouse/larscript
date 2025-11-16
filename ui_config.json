@@ -1,0 +1,31 @@
+{
+  "version": "1.0.1",
+  "theme": {
+    "background_color": "#1a1a2e",
+    "primary_color": "#16213e",
+    "secondary_color": "#0f3460",
+    "accent_color": "#e94560",
+    "text_color": "#ffffff",
+    "button_color": "#e94560",
+    "button_hover": "#ff6b81"
+  },
+  "fonts": {
+    "main_font": "Segoe UI",
+    "title_font": "Segoe UI Bold",
+    "size_small": 9,
+    "size_normal": 10,
+    "size_large": 12
+  },
+  "layout": {
+    "window_width": 800,
+    "window_height": 600,
+    "padding": 10,
+    "button_width": 200,
+    "button_height": 35
+  },
+  "animations": {
+    "fade_in": true,
+    "slide_effect": false,
+    "transition_speed": 200
+  }
+}
