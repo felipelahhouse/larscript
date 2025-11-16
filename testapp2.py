@@ -23,7 +23,7 @@ import shutil
 import zipfile
 
 # 🔄 SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA
-CURRENT_VERSION = "1.1.0"
+CURRENT_VERSION = "1.1.1"
 GITHUB_REPO = "felipelahhouse/larscript"  # Repositório correto
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/version.json"
@@ -435,17 +435,17 @@ class PerfectAimbotConfig:
         
         # CONFIGURAÇÕES ULTRA AGRESSIVAS PARA TRACKING PERFEITO
         self.ar_config = {
-            "sensitivity": 9.0,  # Sensibilidade MÁXIMA para tracking instantâneo
-            "MovementCoefficientX": 8.0,  # Movimento horizontal MUITO FORTE
-            "MovementCoefficientY": 5.0,  # Movimento vertical BALANCEADO
+            "sensitivity": 15.0,  # Sensibilidade ULTRA ALTA para snap instantâneo
+            "MovementCoefficientX": 12.0,  # Movimento horizontal ULTRA FORTE
+            "MovementCoefficientY": 10.0,  # Movimento vertical ULTRA FORTE
             "movementSteps": 1,  # MOVIMENTO ÚNICO = VELOCIDADE MÁXIMA
             "delay": 0.0,  # SEM DELAY = SEM LAG
             "radius": 480,  # FOV máximo
             "confidence_threshold": 0.12,  # Detecção mais precisa - menos falsos positivos
             "head_offset_factor": 0.08,  # Offset para cabeça
             "recoil_control": True,  # SEMPRE ATIVO para AR
-            "recoil_strength": 2.5,  # RECOIL MUITO REDUZIDO
-            "smooth_factor": 0.50  # 🔥 SMOOTH MUITO BAIXO = movimento DIRETO
+            "recoil_strength": 0.8,  # RECOIL QUASE ZERO (0.8 = mínimo)
+            "smooth_factor": 0.85  # 🔥 SMOOTH ALTO = GRUDA NO ALVO (85% suave)
         }
         
         self.dmr_config = {
@@ -2524,10 +2524,10 @@ def main():
                     final_x = int(moveX * sens * coef_x * smooth_multiplier)
                     final_y = int(moveY * sens * coef_y * smooth_multiplier)
                     
-                    # 🔥 Recoil control FORTE - APENAS para AR
+                    # 🔥 Recoil control SUAVE - APENAS para AR
                     if config.current_weapon == 'AR':
-                        rs = float(current_cfg.get('recoil_strength', 3.5))
-                        final_y += int(rs * 3.0)  # 🔥 Compensação FORTE (puxa mais pra baixo)
+                        rs = float(current_cfg.get('recoil_strength', 0.8))
+                        final_y += int(rs * 1.0)  # 🔥 Compensação MÍNIMA (quase zero recoil)
                     # DMR não usa recoil
                     
                     # 🔥 Limites AUMENTADOS para não perder alvo
